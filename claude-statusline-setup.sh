@@ -22,7 +22,13 @@ input=$(cat)
 user=$(whoami)
 host=$(hostname -s)
 # Account display name (same name shown in the "Welcome back ..." greeting)
-display_name=$(jq -r '.oauthAccount.displayName // empty' "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/.claude.json" 2>/dev/null)
+display_name=""
+for cfg in "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/.claude.json" "$HOME/.claude.json"; do
+  if [ -f "$cfg" ]; then
+    display_name=$(jq -r '.oauthAccount.displayName // empty' "$cfg" 2>/dev/null)
+    [ -n "$display_name" ] && break
+  fi
+done
 dir=$(echo "$input" | jq -r '.workspace.current_dir // .cwd')
 model=$(echo "$input" | jq -r '.model.display_name // ""')
 used=$(echo "$input" | jq -r '.context_window.used_percentage // empty')
