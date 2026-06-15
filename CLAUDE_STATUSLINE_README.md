@@ -93,6 +93,16 @@ To customize colors or fields, edit the script at `~/.claude/statusline-command.
 2. Team members run the setup script or follow manual setup
 3. Everyone gets the same status line view
 
+## Account display name lookup
+
+The `Sourav` (account display name) field is read from your Claude Code config JSON. The script checks these paths in order and uses the first one that contains `oauthAccount.displayName`:
+
+1. `$CLAUDE_CONFIG_DIR/.claude.json` (if `CLAUDE_CONFIG_DIR` is set)
+2. `~/.claude/.claude.json`
+3. `~/.claude.json` (the default location on most installs)
+
+If none of these contain a display name, the field is simply omitted from the status line.
+
 ## System requirements
 
 - macOS, Linux, or WSL2
