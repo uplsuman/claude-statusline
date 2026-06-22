@@ -19,8 +19,6 @@ cat > "$STATUSLINE_SCRIPT" << 'SCRIPT_EOF'
 
 input=$(cat)
 
-user=$(whoami)
-host=$(hostname -s)
 # Account display name (same name shown in the "Welcome back ..." greeting)
 display_name=""
 for cfg in "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/.claude.json" "$HOME/.claude.json"; do
@@ -31,6 +29,7 @@ for cfg in "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/.claude.json" "$HOME/.claude.jso
 done
 dir=$(echo "$input" | jq -r '.workspace.current_dir // .cwd')
 model=$(echo "$input" | jq -r '.model.display_name // ""')
+effort=$(echo "$input" | jq -r '.effort.level // empty')
 used=$(echo "$input" | jq -r '.context_window.used_percentage // empty')
 in_tok=$(echo "$input" | jq -r '.context_window.current_usage.input_tokens // empty')
 out_tok=$(echo "$input" | jq -r '.context_window.current_usage.output_tokens // empty')
@@ -58,11 +57,8 @@ yellow="\033[38;2;243;249;157m"
 green="\033[38;2;90;247;142m"
 reset="\033[0m"
 
-# user@host
-printf "${grey}%s@%s${reset}" "$user" "$host"
-
 # directory
-printf "  ${blue}%s${reset}" "$short_dir"
+printf "${blue}%s${reset}" "$short_dir"
 
 # git branch
 if [ -n "$git_branch" ]; then
@@ -80,6 +76,11 @@ fi
 # model
 if [ -n "$model" ]; then
   printf "  ${cyan}%s${reset}" "$model"
+fi
+
+# reasoning effort level (only present when the model supports it)
+if [ -n "$effort" ]; then
+  printf "  ${yellow}effort:${reset}${cyan}%s${reset}" "$effort"
 fi
 
 # weekly / session rate limit usage
@@ -152,9 +153,10 @@ echo "And set the path to:"
 echo "  ~/.claude/statusline-command.sh"
 echo ""
 echo "Done! Your status line will now show:"
-echo "  • User@host and directory"
+echo "  • Directory"
 echo "  • Account display name (same as the 'Welcome back ...' greeting)"
 echo "  • Current model"
+echo "  • Reasoning effort level (e.g., 'effort:high') when supported"
 echo "  • Session usage % with reset timer (e.g., '9% reset 2h34m')"
 echo "  • Weekly usage % (e.g., 'week: 43%')"
 echo "  • Context window % (e.g., 'ctx: 8%')"
